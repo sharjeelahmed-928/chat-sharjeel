@@ -3,15 +3,25 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { storage } from "@/lib/storage";
 import { deriveTitle } from "@/lib/utils";
-import { AppSettings, Attachment, ChatApiAttachment, ChatApiMessage, Conversation, Message } from "@/types";
+import {
+  AppSettings,
+  Attachment,
+  ChatApiAttachment,
+  ChatApiMessage,
+  Conversation,
+  Message,
+} from "@/types";
 
 function newId() {
-  if (typeof crypto !== "undefined" && "randomUUID" in crypto) return crypto.randomUUID();
+  if (typeof crypto !== "undefined" && "randomUUID" in crypto) {
+    return crypto.randomUUID();
+  }
   return `${Date.now()}-${Math.random().toString(36).slice(2)}`;
 }
 
 function newConversation(): Conversation {
   const now = Date.now();
+
   return {
     id: newId(),
     title: "New chat",
@@ -21,11 +31,14 @@ function newConversation(): Conversation {
   };
 }
 
-/** Drops browser-only fields (preview URLs, in-progress status) before sending to the API. */
-function toApiAttachments(attachments?: Attachment[]): ChatApiAttachment[] | undefined {
+function toApiAttachments(
+  attachments?: Attachment[]
+): ChatApiAttachment[] | undefined {
   if (!attachments || attachments.length === 0) return undefined;
+
   const ready = attachments.filter((a) => a.status === "ready");
   if (ready.length === 0) return undefined;
+
   return ready.map((a) => ({
     name: a.name,
     mimeType: a.mimeType,
@@ -47,7 +60,10 @@ export type ChatErrorCode =
   | "ABORTED";
 
 interface SendOptions {
-  settings: Pick<AppSettings, "model" | "temperature" | "responseLength">;
+  settings: Pick<
+    AppSettings,
+    "model" | "temperature" | "responseLength"
+  >;
 }
 
 export function useConversations() {
@@ -55,9 +71,9 @@ export function useConversations() {
   const [activeId, setActiveId] = useState<string | null>(null);
   const [isStreaming, setIsStreaming] = useState(false);
   const [hydrated, setHydrated] = useState(false);
+
   const abortRef = useRef<AbortController | null>(null);
 
-  // Hydrate from localStorage on mount.
   useEffect(() => {
     const loaded = storage.loadConversations();
     setConversations(loaded);
@@ -65,7 +81,6 @@ export function useConversations() {
     setHydrated(true);
   }, []);
 
-  // Persist on every change (post-hydration).
   useEffect(() => {
     if (!hydrated) return;
     storage.saveConversations(conversations);
@@ -95,13 +110,31 @@ export function useConversations() {
   const renameConversation = useCallback((id: string, title: string) => {
     const trimmed = title.trim();
     if (!trimmed) return;
+
     setConversations((prev) =>
-      prev.map((c) => (c.id === id ? { ...c, title: trimmed, updatedAt: Date.now() } : c))
+      prev.map((c) =>
+        c.id === id
+          ? {
+              ...c,
+              title: trimmed,
+              updatedAt: Date.now(),
+            }
+          : c
+      )
     );
   }, []);
 
   const togglePin = useCallback((id: string) => {
-    setConversations((prev) => prev.map((c) => (c.id === id ? { ...c, pinned: !c.pinned } : c)));
+    setConversations((prev) =>
+      prev.map((c) =>
+        c.id === id
+          ? {
+              ...c,
+              pinned: !c.pinned,
+            }
+          : c
+      )
+    );
   }, []);
 
   const clearAllConversations = useCallback(() => {
@@ -110,10 +143,19 @@ export function useConversations() {
   }, []);
 
   const updateConversationMessages = useCallback(
-    (id: string, updater: (messages: Message[]) => Message[]) => {
+    (
+      id: string,
+      updater: (messages: Message[]) => Message[]
+    ) => {
       setConversations((prev) =>
         prev.map((c) =>
-          c.id === id ? { ...c, messages: updater(c.messages), updatedAt: Date.now() } : c
+          c.id === id
+            ? {
+                ...c,
+                messages: updater(c.messages),
+                updatedAt: Date.now(),
+              }
+            : c
         )
       );
     },
@@ -127,15 +169,26 @@ export function useConversations() {
   }, []);
 
   const runGeneration = useCallback(
-    async (conversationId: string, history: Message[], { settings }: SendOptions) => {
+    async (
+      conversationId: string,
+      history: Message[],
+      { settings }: SendOptions
+    ) => {
       const assistantId = newId();
       const controller = new AbortController();
+
       abortRef.current = controller;
       setIsStreaming(true);
 
       updateConversationMessages(conversationId, (msgs) => [
         ...msgs,
-        { id: assistantId, role: "assistant", content: "", createdAt: Date.now(), pending: true },
+        {
+          id: assistantId,
+          role: "assistant",
+          content: "",
+          createdAt: Date.now(),
+          pending: true,
+        },
       ]);
 
       const apiMessages: ChatApiMessage[] = history.map((m) => ({
@@ -147,7 +200,9 @@ export function useConversations() {
       try {
         const res = await fetch("/api/chat", {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: {
+            "Content-Type": "application/json",
+          },
           body: JSON.stringify({
             messages: apiMessages,
             model: settings.model,
@@ -159,41 +214,81 @@ export function useConversations() {
 
         if (!res.ok || !res.body) {
           let errorMessage = "Something went wrong. Please try again.";
+
           try {
             const data = await res.json();
-            if (data?.error) errorMessage = data.error;
-          } catch {
-            /* non-JSON error body */
-          }
+            if (data?.error) {
+              errorMessage = data.error;
+            }
+          } catch {}
+
           updateConversationMessages(conversationId, (msgs) =>
             msgs.map((m) =>
-              m.id === assistantId ? { ...m, pending: false, error: errorMessage } : m
+              m.id === assistantId
+                ? {
+                    ...m,
+                    pending: false,
+                    error: errorMessage,
+                  }
+                : m
             )
           );
+
           return;
         }
 
         const reader = res.body.getReader();
         const decoder = new TextDecoder();
+
         let accumulated = "";
 
         while (true) {
           const { done, value } = await reader.read();
+
           if (done) break;
-          accumulated += decoder.decode(value, { stream: true });
+
+          accumulated += decoder.decode(value, {
+            stream: true,
+          });
+
           const snapshot = accumulated;
+
           updateConversationMessages(conversationId, (msgs) =>
-            msgs.map((m) => (m.id === assistantId ? { ...m, content: snapshot } : m))
+            msgs.map((m) =>
+              m.id === assistantId
+                ? {
+                    ...m,
+                    content: snapshot,
+                  }
+                : m
+            )
           );
         }
 
         updateConversationMessages(conversationId, (msgs) =>
-          msgs.map((m) => (m.id === assistantId ? { ...m, pending: false } : m))
+          msgs.map((m) =>
+            m.id === assistantId
+              ? {
+                  ...m,
+                  pending: false,
+                }
+              : m
+          )
         );
       } catch (err) {
-        if (err instanceof DOMException && err.name === "AbortError") {
+        if (
+          err instanceof DOMException &&
+          err.name === "AbortError"
+        ) {
           updateConversationMessages(conversationId, (msgs) =>
-            msgs.map((m) => (m.id === assistantId ? { ...m, pending: false } : m))
+            msgs.map((m) =>
+              m.id === assistantId
+                ? {
+                    ...m,
+                    pending: false,
+                  }
+                : m
+            )
           );
         } else {
           updateConversationMessages(conversationId, (msgs) =>
@@ -202,7 +297,8 @@ export function useConversations() {
                 ? {
                     ...m,
                     pending: false,
-                    error: "Network error — check your connection and try again.",
+                    error:
+                      "Network error — check your connection and try again.",
                   }
                 : m
             )
@@ -215,8 +311,7 @@ export function useConversations() {
     },
     [updateConversationMessages]
   );
-
-  const sendMessage = useCallback(
+    const sendMessage = useCallback(
     async (text: string, attachments: Attachment[], options: SendOptions) => {
       const trimmed = text.trim();
       if ((!trimmed && attachments.length === 0) || isStreaming) return;
@@ -236,12 +331,14 @@ export function useConversations() {
         const convo = newConversation();
         conversationId = convo.id;
 
-        const fullHistory = [userMessage];
+        const fullHistory: Message[] = [userMessage];
 
         setConversations((prev) => [
           {
             ...convo,
-            title: deriveTitle(trimmed || attachments[0]?.name || "New chat"),
+            title: deriveTitle(
+              trimmed || attachments[0]?.name || "New chat"
+            ),
             messages: fullHistory,
             updatedAt: Date.now(),
           },
@@ -261,7 +358,7 @@ export function useConversations() {
 
       if (!existingConversation) return;
 
-      const fullHistory = [
+      const fullHistory: Message[] = [
         ...existingConversation.messages,
         userMessage,
       ];
@@ -273,7 +370,9 @@ export function useConversations() {
                 ...c,
                 title:
                   c.messages.length === 0
-                    ? deriveTitle(trimmed || attachments[0]?.name || "New chat")
+                    ? deriveTitle(
+                        trimmed || attachments[0]?.name || "New chat"
+                      )
                     : c.title,
                 messages: fullHistory,
                 updatedAt: Date.now(),
@@ -286,29 +385,37 @@ export function useConversations() {
     },
     [activeId, conversations, isStreaming, runGeneration]
   );
-  return {
-            ...c,
-            title: isFirstMessage ? deriveTitle(trimmed || attachments[0]?.name || "New chat") : c.title,
-            messages: fullHistory,
-            updatedAt: Date.now(),
-          };
-        })
-sages = activeConversation.messages;
-      const lastUserIdx = [...messages].reverse().findIndex((m) => m.role === "user");
+    const regenerate = useCallback(
+    async (options: SendOptions) => {
+      if (!activeConversation || isStreaming) return;
+
+      const messages = activeConversation.messages;
+      const lastUserIdx = [...messages]
+        .reverse()
+        .findIndex((m) => m.role === "user");
+
       if (lastUserIdx === -1) return;
+
       const cutIdx = messages.length - 1 - lastUserIdx;
       const trimmedHistory = messages.slice(0, cutIdx + 1);
 
       updateConversationMessages(activeConversation.id, () => trimmedHistory);
+
       await runGeneration(activeConversation.id, trimmedHistory, options);
     },
-    [activeConversation, isStreaming, runGeneration, updateConversationMessages]
+    [
+      activeConversation,
+      isStreaming,
+      runGeneration,
+      updateConversationMessages,
+    ]
   );
 
   /** Edits a user message, drops everything after it, and regenerates the reply. */
   const editMessage = useCallback(
     async (id: string, newText: string, options: SendOptions) => {
       if (!activeConversation || isStreaming) return;
+
       const trimmed = newText.trim();
       if (!trimmed) return;
 
@@ -320,12 +427,29 @@ sages = activeConversation.messages;
         content: trimmed,
         edited: true,
       };
-      const truncatedHistory = [...activeConversation.messages.slice(0, idx), edited];
 
-      updateConversationMessages(activeConversation.id, () => truncatedHistory);
-      await runGeneration(activeConversation.id, truncatedHistory, options);
+      const truncatedHistory = [
+        ...activeConversation.messages.slice(0, idx),
+        edited,
+      ];
+
+      updateConversationMessages(
+        activeConversation.id,
+        () => truncatedHistory
+      );
+
+      await runGeneration(
+        activeConversation.id,
+        truncatedHistory,
+        options
+      );
     },
-    [activeConversation, isStreaming, runGeneration, updateConversationMessages]
+    [
+      activeConversation,
+      isStreaming,
+      runGeneration,
+      updateConversationMessages,
+    ]
   );
 
   return {
