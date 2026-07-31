@@ -221,20 +221,6 @@ export function useConversations() {
       const trimmed = text.trim();
       if ((!trimmed && attachments.length === 0) || isStreaming) return;
 
-      let conversationId = activeId;
-      let isFirstMessage = false;
-
-      if (!conversationId) {
-        const convo = newConversation();
-        conversationId = convo.id;
-        isFirstMessage = true;
-        setConversations((prev) => [convo, ...prev]);
-        setActiveId(convo.id);
-      } else {
-        const existing = conversations.find((c) => c.id === conversationId);
-        isFirstMessage = (existing?.messages.length ?? 0) === 0;
-      }
-
       const userMessage: Message = {
         id: newId(),
         role: "user",
@@ -243,31 +229,71 @@ export function useConversations() {
         attachments: attachments.length > 0 ? attachments : undefined,
       };
 
-      let fullHistory: Message[] = [];
+      let conversationId = activeId;
+
+      // NEW CHAT
+      if (!conversationId) {
+        const convo = newConversation();
+        conversationId = convo.id;
+
+        const fullHistory = [userMessage];
+
+        setConversations((prev) => [
+          {
+            ...convo,
+            title: deriveTitle(trimmed || attachments[0]?.name || "New chat"),
+            messages: fullHistory,
+            updatedAt: Date.now(),
+          },
+          ...prev,
+        ]);
+
+        setActiveId(conversationId);
+
+        await runGeneration(conversationId, fullHistory, options);
+        return;
+      }
+
+      // EXISTING CHAT
+      const existingConversation = conversations.find(
+        (c) => c.id === conversationId
+      );
+
+      if (!existingConversation) return;
+
+      const fullHistory = [
+        ...existingConversation.messages,
+        userMessage,
+      ];
+
       setConversations((prev) =>
-        prev.map((c) => {
-          if (c.id !== conversationId) return c;
-          fullHistory = [...c.messages, userMessage];
-          return {
+        prev.map((c) =>
+          c.id === conversationId
+            ? {
+                ...c,
+                title:
+                  c.messages.length === 0
+                    ? deriveTitle(trimmed || attachments[0]?.name || "New chat")
+                    : c.title,
+                messages: fullHistory,
+                updatedAt: Date.now(),
+              }
+            : c
+        )
+      );
+
+      await runGeneration(conversationId, fullHistory, options);
+    },
+    [activeId, conversations, isStreaming, runGeneration]
+  );
+  return {
             ...c,
             title: isFirstMessage ? deriveTitle(trimmed || attachments[0]?.name || "New chat") : c.title,
             messages: fullHistory,
             updatedAt: Date.now(),
           };
         })
-      );
-
-      // Wait a tick so the state update above is reflected before we read
-      // `fullHistory` (captured synchronously via the updater above).
-      await runGeneration(conversationId, fullHistory, options);
-    },
-    [activeId, conversations, isStreaming, runGeneration]
-  );
-
-  const regenerate = useCallback(
-    async (options: SendOptions) => {
-      if (!activeConversation || isStreaming) return;
-      const messages = activeConversation.messages;
+sages = activeConversation.messages;
       const lastUserIdx = [...messages].reverse().findIndex((m) => m.role === "user");
       if (lastUserIdx === -1) return;
       const cutIdx = messages.length - 1 - lastUserIdx;
