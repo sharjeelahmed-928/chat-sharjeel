@@ -110,7 +110,12 @@ export async function POST(req: NextRequest) {
   }
 
   if (!validateMessages(payload.messages)) {
-    return badRequest("`messages` must be a non-empty array of { role, content } objects.");
+    console.error("INVALID PAYLOAD:");
+    console.error(JSON.stringify(payload, null, 2));
+
+    return badRequest(
+      "`messages` must be a non-empty array of { role, content } objects."
+    );
   }
 
   const model = "llama-3.3-70b-versatile";
