@@ -1,165 +1,247 @@
-# chat.sharjeel.space
+<div align="center">
 
-An open-source, account-free AI assistant. No signup, no login — open the site
-and start chatting. Every conversation lives only in your browser's
-`localStorage`; the server never sees or stores your chat history.
+# 🤖 Chat Sharjeel Space
 
-Built with Next.js 15 (App Router), React 19, TypeScript, Tailwind CSS, and
-the Gemini API.
+### A modern AI chatbot powered by Groq, built with Next.js & Supabase.
 
-## Features
+<p align="center">
+  <img src="https://img.shields.io/badge/Next.js-15-black?logo=next.js" />
+  <img src="https://img.shields.io/badge/React-19-61DAFB?logo=react" />
+  <img src="https://img.shields.io/badge/TypeScript-5-3178C6?logo=typescript" />
+  <img src="https://img.shields.io/badge/TailwindCSS-4-38BDF8?logo=tailwindcss" />
+  <img src="https://img.shields.io/badge/Supabase-Storage-3ECF8E?logo=supabase" />
+  <img src="https://img.shields.io/badge/Groq-LLM-orange" />
+  <img src="https://img.shields.io/badge/License-MIT-green" />
+</p>
 
-- **No auth, ever.** An anonymous session starts the moment the page loads.
-- **Local-first storage.** Conversations, messages, and settings are saved to
-  `localStorage` and persist across refreshes. Nothing is sent to a database.
-- **Streaming responses** from Gemini, rendered incrementally as they arrive.
-- **Markdown everywhere**: headings, bold/italic, tables, ordered/unordered
-  lists, blockquotes, inline code, and fenced code blocks with syntax
-  highlighting (via `react-markdown` + `remark-gfm` +
-  `react-syntax-highlighter`).
-- **Full chat management**: new chat, rename, delete, pin, and search across
-  titles and message content.
-- **Auto-generated titles** derived from each conversation's first message.
-- **Copy, regenerate, and stop-generation** controls on assistant messages.
-- **Settings panel**: theme, default model, response length, temperature,
-  clear-all, and export/import chats as JSON.
-- **Light / dark / system themes**, applied with no flash-of-wrong-theme on
-  load.
-- **Responsive** from mobile to desktop, with a collapsible sidebar.
-- **Accessible**: labeled controls, keyboard-operable inputs, visible focus
-  states.
-- **Resilient**: offline detection, friendly API/rate-limit/timeout error
-  messages, and retry affordances.
-- **Secure by design**: the Gemini API key lives only on the server; requests
-  are validated, sanitized, and rate-limited before they ever reach Gemini.
+**Fast. Beautiful. Open Source.**
 
-## Tech stack
+A ChatGPT-inspired AI assistant with a powerful admin dashboard, dynamic branding, customizable themes, prompt management, and Groq-powered conversations.
 
-| Layer      | Choice                                                |
-| ---------- | ------------------------------------------------------ |
-| Framework  | Next.js 15 (App Router), React 19, TypeScript          |
-| Styling    | Tailwind CSS, shadcn/ui-style primitives, Framer Motion |
-| AI         | Google Gemini API (`streamGenerateContent`)             |
-| Storage    | Browser `localStorage` (no database, no backend auth)  |
-| Deployment | Vercel                                                  |
+</div>
 
-## Getting started
+---
 
-### 1. Install dependencies
+# ✨ Features
+
+## 🤖 AI Chat
+
+- Lightning-fast Groq inference
+- Markdown support
+- Streaming responses
+- Vision support
+- Chat history
+- Beautiful ChatGPT-style interface
+- Mobile responsive
+
+---
+
+## 🎨 Website Customization
+
+Manage everything from the Admin Panel.
+
+- Logo upload
+- Favicon upload
+- Site branding
+- SEO settings
+- OpenGraph image
+- Google Analytics
+- Google Verification
+- Maintenance Mode
+- Announcement Banner
+- Dynamic Footer
+- Social Links
+- Contact Information
+
+---
+
+## 🎨 Theme System
+
+Fully customizable colors.
+
+- Primary Color
+- Secondary Color
+- Accent Color
+- Background Color
+- Foreground Color
+
+Supports
+
+- ☀ Light Mode
+- 🌙 Dark Mode
+
+---
+
+## 🛠 Admin Dashboard
+
+Secure authentication with different roles.
+
+- Dashboard
+- Website Settings
+- Chat Settings
+- Prompt Management
+- Admin Management
+- Logout
+- Role-based permissions
+
+---
+
+## 📁 Media Upload
+
+Upload directly from the Admin Panel.
+
+- Logo
+- Favicon
+- Future assets
+
+Powered by Supabase Storage.
+
+---
+
+## 🚀 Tech Stack
+
+| Technology | Purpose |
+|------------|---------|
+| Next.js 15 | Framework |
+| React 19 | UI |
+| TypeScript | Type Safety |
+| Tailwind CSS | Styling |
+| Supabase | Database + Storage |
+| Groq API | AI Models |
+| Lucide Icons | Icons |
+
+---
+
+# 📸 Screenshots
+
+Coming soon...
+
+---
+
+# ⚙ Installation
+
+Clone the repository
+
+```bash
+git clone https://github.com/YOUR_USERNAME/chat-sharjeel.git
+```
+
+Install dependencies
 
 ```bash
 npm install
 ```
 
-### 2. Configure your Gemini API key
-
-Copy the example env file and add your key:
-
-```bash
-cp .env.example .env.local
-```
-
-Then edit `.env.local`:
+Create
 
 ```
-GEMINI_API_KEY=your_gemini_api_key_here
+.env.local
 ```
 
-Get a free key at <https://aistudio.google.com/app/apikey>. This key is only
-ever read on the server (inside `app/api/chat/route.ts`) — it is never sent
-to or bundled into the browser.
+Add your environment variables.
 
-Optional variables:
-
-- `GEMINI_MODEL` — a fallback model id if none is supplied by the client
-  (the client normally sends its own `model` from Settings).
-- `RATE_LIMIT_PER_MINUTE` — requests allowed per IP per minute (default `20`).
-
-### 3. Run the dev server
+Run development server
 
 ```bash
 npm run dev
 ```
 
-Open <http://localhost:3000>.
+Open
 
-### 4. Build for production
-
-```bash
-npm run build
-npm run start
+```
+http://localhost:3000
 ```
 
-## Deploying to Vercel
+---
 
-1. Push this repository to GitHub (or GitLab/Bitbucket).
-2. Import the repo in [Vercel](https://vercel.com/new).
-3. Add an environment variable `GEMINI_API_KEY` in the Vercel project
-   settings (Settings → Environment Variables).
-4. Deploy — no other configuration is required.
+# 🔑 Environment Variables
 
-## Project structure
+```env
+GROQ_API_KEY=
+GROQ_MODEL=
+
+SUPABASE_URL=
+SUPABASE_SERVICE_ROLE_KEY=
+NEXT_PUBLIC_SUPABASE_ANON_KEY=
+
+ADMIN_SESSION_SECRET=
+ADMIN_SETUP_SECRET=
+```
+
+---
+
+# 📂 Project Structure
 
 ```
 app/
-  api/chat/route.ts     # Server route: validates, rate-limits, and streams Gemini responses
-  layout.tsx            # Root layout, fonts, no-flash theme script
-  page.tsx              # Main app shell (sidebar + chat window + settings)
-  globals.css           # Design tokens (light/dark) + markdown styles
 components/
-  Sidebar.tsx            # Chat history: search, pin, rename, delete
-  ChatWindow.tsx          # Message list + auto-scroll + input
-  ChatInput.tsx           # Textarea, send/stop button, keyboard shortcuts
-  MessageBubble.tsx       # Single message row (user/assistant), copy/regenerate
-  Markdown.tsx            # react-markdown wiring with custom code renderer
-  CodeBlock.tsx           # Syntax-highlighted code block with copy button
-  WelcomeScreen.tsx        # Empty-state screen with example prompts
-  SettingsDialog.tsx       # Theme, model, length, temperature, export/import
-  ThemeToggle.tsx          # Light/dark/system cycle button
-  ui/                      # Reusable primitives (button, dialog, input, select, ...)
-hooks/
-  useConversations.ts    # Conversation CRUD + streaming send/regenerate logic
-  useSettings.ts         # Persisted settings + theme application
 lib/
-  storage.ts             # localStorage read/write helpers (conversations, settings)
-  gemini.ts              # Server-side Gemini streaming client
-  rate-limit.ts          # In-memory per-IP rate limiter
-  utils.ts               # cn(), date/time/title formatting helpers
-types/
-  index.ts               # Shared TypeScript types
+public/
+styles/
+supabase/
 ```
 
-## Data model (localStorage)
+---
 
-Two keys are used:
+# 🌍 Deployment
 
-- `css.conversations.v1` — an array of `Conversation` objects
-  (`id`, `title`, `createdAt`, `updatedAt`, `pinned`, `messages[]`).
-- `css.settings.v1` — the current `AppSettings`
-  (`theme`, `model`, `responseLength`, `temperature`).
+Deploy easily on **Vercel**.
 
-Use **Settings → Export chats as JSON** to download a backup, and
-**Settings → Import chats** to restore one (on this or another device/browser).
+1. Import repository
+2. Add environment variables
+3. Deploy
 
-## Security notes
+---
 
-- The Gemini API key is read only inside the server route handler
-  (`app/api/chat/route.ts`) via `process.env.GEMINI_API_KEY` — it is never
-  exposed to client-side code or the network response.
-- Incoming requests are validated (message shape, count, and length limits)
-  and lightly sanitized (control-character stripping) before being forwarded.
-- A simple in-memory, per-IP rate limiter guards against casual abuse. For
-  a high-traffic production deployment on multiple serverless instances,
-  swap this for a durable store such as Upstash Redis.
+# 📈 Roadmap
 
-## Notes on the in-memory rate limiter
+- [x] AI Chat
+- [x] Admin Dashboard
+- [x] Dynamic Theme
+- [x] Logo Upload
+- [x] Favicon Upload
+- [x] SEO Settings
+- [x] Prompt Management
+- [x] Responsive Design
+- [ ] Analytics Dashboard
+- [ ] Multiple AI Providers
+- [ ] Conversation Export
+- [ ] User Accounts
+- [ ] Plugin System
 
-Because Vercel serverless functions are ephemeral and can scale across
-multiple instances, the bundled rate limiter resets between cold starts and
-isn't shared across instances. It's intentionally dependency-free per the
-project's constraints; for stricter guarantees at scale, replace
-`lib/rate-limit.ts` with a call to a shared store.
+---
 
-## License
+# 🤝 Contributing
 
-MIT — do whatever you'd like with this.
+Contributions are welcome!
+
+1. Fork the repository
+2. Create a feature branch
+3. Commit your changes
+4. Open a Pull Request
+
+---
+
+# ⭐ Support
+
+If you like this project,
+
+⭐ Star the repository
+
+and share it with others.
+
+---
+
+# 📄 License
+
+Licensed under the **MIT License**.
+
+---
+
+<div align="center">
+
+Built with ❤️ by **Sharjeel Ahmed**
+
+🌐 https://chat.sharjeel.space
+
+</div>
