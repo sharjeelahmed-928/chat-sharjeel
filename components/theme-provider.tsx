@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext } from "react";
+import { createContext, useContext, useEffect } from "react";
 import { hexToHsl } from "@/lib/theme";
 
 export interface ThemeSettings {
@@ -26,20 +26,24 @@ export function ThemeProvider({
   theme: ThemeSettings;
   children: React.ReactNode;
 }) {
+  useEffect(() => {
+    const root = document.documentElement;
+
+    root.style.setProperty("--accent", hexToHsl(theme.primary));
+    root.style.setProperty("--ring", hexToHsl(theme.primary));
+    root.style.setProperty("--assistant-rail", hexToHsl(theme.primary));
+    root.style.setProperty("--user-rail", hexToHsl(theme.secondary));
+
+    root.style.setProperty("--background", hexToHsl(theme.background));
+    root.style.setProperty("--foreground", hexToHsl(theme.foreground));
+
+    root.style.setProperty("--surface", hexToHsl(theme.background));
+    root.style.setProperty("--surface-raised", hexToHsl(theme.background));
+  }, [theme]);
+
   return (
     <ThemeContext.Provider value={theme}>
-      <div
-        style={
-        {
-            "--accent": hexToHsl(theme.primary),
-            "--ring": hexToHsl(theme.primary),
-            "--assistant-rail": hexToHsl(theme.primary),
-            "--user-rail": hexToHsl(theme.secondary),
-        } as React.CSSProperties
-        }
-      >
-        {children}
-      </div>
+      {children}
     </ThemeContext.Provider>
   );
 }
