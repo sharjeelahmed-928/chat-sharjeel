@@ -33,20 +33,14 @@ export function ThemeProvider({
     root.style.setProperty("--ring", hexToHsl(theme.primary));
     root.style.setProperty("--assistant-rail", hexToHsl(theme.primary));
     root.style.setProperty("--user-rail", hexToHsl(theme.secondary));
+    }, [theme]);
 
-    root.style.setProperty("--background", hexToHsl(theme.background));
-    root.style.setProperty("--foreground", hexToHsl(theme.foreground));
-
-    root.style.setProperty("--surface", hexToHsl(theme.background));
-    root.style.setProperty("--surface-raised", hexToHsl(theme.background));
-  }, [theme]);
-
-  return (
-    <ThemeContext.Provider value={theme}>
-      {children}
-    </ThemeContext.Provider>
-  );
-}
+    return (
+        <ThemeContext.Provider value={theme}>
+        {children}
+        </ThemeContext.Provider>
+    );
+    }
 
 export function useTheme() {
   return useContext(ThemeContext);
